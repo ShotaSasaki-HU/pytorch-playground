@@ -10,6 +10,6 @@ pytorch_book_info-main
 *.fdb_latexmk
 *.synctex.gz
 
-# latexmk output dir (if using out/)
+# latexmk output dir
 note/out/*
 !note/out/*.pdf
