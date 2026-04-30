@@ -1,1 +1,15 @@
 pytorch_book_info-main
+
+# LaTeX intermediate files
+*.aux
+*.log
+*.toc
+*.out
+*.dvi
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+
+# latexmk output dir (if using out/)
+note/out/*
+!note/out/*.pdf
