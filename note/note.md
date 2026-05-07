@@ -70,4 +70,41 @@ $$
     $$
     定義域が良いので，指数関数でオーバーフローを起こさない．
 
-$x_i = -1000$の場合は，$e^{-1000} \approx 0.0$となる．もし，softmax関数の分母全体も$0$になった場合は，softmax関数が不定形で`nan`を吐き，以降の議論は同様．
+$x_i = -1000$の場合は，$e^{-1000} \approx 0.0$となる．もし，softmax関数の分母全体も$0.0$になった場合は，softmax関数が不定形で`nan`を吐き，以降の議論は同様．
+
+## 重み行列の添字
+通常，重み行列の要素$w_{ij}$は「j番目の入力からi番目の出力への重み」を指す．ニューラルネットの図を想像してね．
+
+## `nn.BCELoss()`と`nn.CrossEntropyLoss()`で渡す正解ラベルの次元が違う理由
+どうしてBCELossの正解ラベルを作る時は，わざわざ1次元テンソルを2次元に拡張したのに，CrossEntropyLossの正解ラベルは1次元テンソルじゃないといけない仕様になっているの？
+```python
+# nn.BCELoss()
+inputs_train = torch.tensor(x_train, dtype=torch.float32)
+labels_train = torch.tensor(y_train, dtype=torch.float32).view((-1, 1)) # torch.Size([N, 1])
+
+criterion = nn.BCELoss() # 2値交差エントロピー
+loss = criterion(outputs, labels_train) # 損失
+
+# nn.CrossEntropyLoss()
+inputs_train = torch.tensor(x_train, dtype=torch.float32)
+labels_train = torch.tensor(y_train, dtype=torch.long) # torch.Size([N])
+
+criterion = nn.CrossEntropyLoss() # 交差エントロピー
+loss = criterion(outputs, labels_train) # 損失
+```
+
+- BCELossの数式
+    $$ L_{BCE} = -\frac{1}{N} \sum_{i=1}^N \left( y_i \log(\hat{y}_i) + (1 - y_i) \log(1 - \hat{y}_i) \right) $$
+    - $N$：サンプル数（バッチサイズ）（スカラー）
+    - $y_i$：$i$番目のサンプルの真のラベル（$0$または$1$のスカラー）
+    - $\hat{y}_i$：$i$番目のサンプルに対して予測モデルが出した確率（$0$から$1$のスカラー）
+
+- CrossEntropyLossの数式
+    $$ L_{CE} = -\frac{1}{N} \sum_{i=1}^N \log\left( \frac{\exp(x_{i, y_i})}{\sum_{j=1}^C \exp(x_{i, j})} \right) $$
+    - $C$：クラスの総数（スカラー）
+    - $x_{i, j}$：$i$番目のサンプルの$j$番目のクラスに対する予測ロジット（スカラー）
+    - $y_i$：$i$番目のサンプルの正解クラスのインデックス（$0$から$C-1$の整数スカラー）
+
+- 回答：BCEとCEでは，正解ラベルの使い方が違うから．
+    - BCE：正解ラベル$y_i$は，予測モデルの出力$\hat{y}_i$との積を直接計算される．よって，`labels`と`outputs`では，同じインデックスの要素が同じ意味を持つ必要がある．（例：[N]と[N]，[N,1]と[N,1]）次元が不一致な場合，お節介なブロードキャストによって意味の対応がズレる事故が起きる．
+    - CE：正解ラベル$y_i$は，$i$番目のサンプル中から正解クラスの出力をピックアップするための「インデックス」として機能する．テンソル演算に参加しない「選択キー」である．ベーシックな学習においては，インデックスに2次元テンソルは冗長であり，1次元テンソルが最適である．（※正解を確率分布として直接教えたい高度なケースに限っては，CEでも2次元の正解ラベルが許容される．）
