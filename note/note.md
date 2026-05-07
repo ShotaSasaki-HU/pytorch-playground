@@ -108,3 +108,18 @@ loss = criterion(outputs, labels_train) # 損失
 - 回答：BCEとCEでは，正解ラベルの使い方が違うから．
     - BCE：正解ラベル$y_i$は，予測モデルの出力$\hat{y}_i$との積を直接計算される．よって，`labels`と`outputs`では，同じインデックスの要素が同じ意味を持つ必要がある．（例：[N]と[N]，[N, 1]と[N, 1]）次元が不一致な場合，お節介なブロードキャストによって意味の対応がズレる事故が起きる．
     - CE：正解ラベル$y_i$は，$i$番目のサンプル中から正解クラスの出力をピックアップするための「インデックス」として機能する．テンソル演算に参加しない「選択キー」である．ベーシックな学習においては，インデックスに2次元テンソルは冗長であり，1次元テンソルが最適である．（※正解を確率分布として直接教えたい高度なケースに限っては，CEでも2次元の正解ラベルが許容される．）
+
+## numpy.ndarrayとtorch.Tensorの相互変換
+### Tensor → NumPy
+- `tensor.numpy()`：`requires_grad=False` のときのみ可（`True`ならエラー）
+- `tensor.detach().numpy()`：計算グラフから切り離して変換（推奨）
+- `tensor.data.numpy()`：使わないで！安全チェック無しで危険！非人道的！
+
+### NumPy → Tensor
+- `torch.from_numpy(array)`：メモリ共有（高速・コピーなし）
+- `torch.tensor(array)`：コピーして新規作成
+
+### 注意
+- `.detach().numpy()` はコピーではなくメモリ共有
+- 完全コピーしたい場合：`tensor.detach().numpy().copy()`
+- GPUテンソルは：`tensor.cpu().detach().numpy()`
