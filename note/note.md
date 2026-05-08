@@ -123,3 +123,9 @@ loss = criterion(outputs, labels_train) # 損失
 - `.detach().numpy()` はコピーではなくメモリ共有
 - 完全コピーしたい場合：`tensor.detach().numpy().copy()`
 - GPUテンソルは：`tensor.cpu().detach().numpy()`
+
+## PyTorchにおけるGPU利用のルール
+- テンソル変数は，データがCPU・GPU上のどちらにあるのかを属性として持っている．
+- CPUとGPU間でデータを転送する時は，to関数を使う．
+- 2つの変数が両方ともGPU上にある場合，演算はGPU上で行われる．
+- 変数の片方がCPU，もう一方がGPUの場合，演算はエラーになる．
