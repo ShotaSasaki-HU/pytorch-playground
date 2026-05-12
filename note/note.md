@@ -129,3 +129,38 @@ loss = criterion(outputs, labels_train) # 損失
 - CPUとGPU間でデータを転送する時は，to関数を使う．
 - 2つの変数が両方ともGPU上にある場合，演算はGPU上で行われる．
 - 変数の片方がCPU，もう一方がGPUの場合，演算はエラーになる．
+
+## 組み込みデータセットの分割とTransform（データ拡張）の罠
+- まず，`torchvision.datasets`モジュールの組み込みデータセット（MNISTやCIFAR10など）を使用する時は，引数`train`が存在する．
+- `train=False`は，テストデータである．これを検証データとみなすと，テストデータが存在しなくなってしまう．よって，検証データは，`train=True`のデータセットから切り出す必要がある．
+- ここで，データ拡張は一般的に学習データにのみ適用し，検証や評価データには含めない事を思い出しておく．検証や評価データのTransformにデータ拡張を混ぜてしまうと，エポックごとにデータ拡張結果が変化してしまい，指標の変化が「モデル性能の変化」に依るものか「入力データの変化」に依るものか区別できなくなってしまう．（※PyTorchのTransformは，データセットの`__getitem__`メソッドによって毎エポック実行される．）
+- では，`train=True`のデータセットを訓練データ・検証データに分割してから，それぞれ異なるTransformを適用するだけの話ではないか？
+- ところが，`torchvision.datasets`モジュールのインスタンスがTransformを保持するAttribute（クラスの属性）名は，データセット毎に異なる．つまり，`train_set.transform = new_transform`などと書けば，エラーも出ないのにTransformが書き換わらない場合があるという恐ろしい罠が存在する．
+    > Manipulating the internal .transform attribute assumes that self.transform is indeed used to apply the transformations. While this might be the case for e.g. MNIST other datasets could use other attributes (e.g. self.image_fransform) and you would need to add this manipulation according to the real implementation (which could of course also change between releases). The right approach is thus to set the transformations once during the initialization of the Dataset and allow the Dataset to handle the transformations internally without depending on its actual implementation. (https://discuss.pytorch.org/t/how-to-apply-another-transform-to-an-existing-dataset/85416/7)
+- じゃあどうすればいいのか．解決策は「元のデータセットを2つ作り，それぞれに別々のTransformを適用した上で，同じインデックス配列を使って`Subset`で抽出する」事である．
+    ```python
+    import torch
+    from torchvision import datasets, transforms
+    from torch.utils.data import Subset
+
+    # 1. 訓練用と検証用で，元のデータセットを2つ作る．
+    train_dataset_full = datasets.CIFAR10(
+        root='./data', train=True, download=True, transform=train_transform) # 訓練用フィルタ（データ拡張あり）
+
+    valid_dataset_full = datasets.CIFAR10(
+        root='./data', train=True, download=True, transform=test_transform) # 検証用フィルタ（データ拡張なし）
+
+    # 2. 訓練と検証のデータ数を決める．
+    train_size = int(len(train_dataset_full) * 0.9)
+    valid_size = len(train_dataset_full) - train_size
+
+    # 3. データを分割するための「ランダムなインデックス」を生成
+    # torch.randperm(n)：0からn-1までのランダムな整数の順列を返す．
+    torch.manual_seed(42)
+    indices = torch.randperm(len(train_dataset_full)).tolist()
+
+    # 4. random_splitを使わず，Subsetを使って訓練データ・検証データを分ける．
+    train_dataset = Subset(train_dataset_full, indices[:train_size])
+    valid_dataset = Subset(valid_dataset_full, indices[train_size:])
+    ```
+    > My preference would be to create three difference datasets using the desired transformations for the training, validation, and test sets. This approach makes it clear that the train_dataset also uses the train_transform only. Once this is done, create the training, validation, and test indices via any kind of splitting (sklearn.model_selection.train_test_split is quite popular) and wrap the datasets into a Subset with the corresponding indices. (https://discuss.pytorch.org/t/custom-dataset-best-practices-for-transformations-on-training-set/155761/2)
