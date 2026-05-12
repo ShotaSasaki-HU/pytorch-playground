@@ -164,3 +164,4 @@ loss = criterion(outputs, labels_train) # 損失
     valid_dataset = Subset(valid_dataset_full, indices[train_size:])
     ```
     > My preference would be to create three difference datasets using the desired transformations for the training, validation, and test sets. This approach makes it clear that the train_dataset also uses the train_transform only. Once this is done, create the training, validation, and test indices via any kind of splitting (sklearn.model_selection.train_test_split is quite popular) and wrap the datasets into a Subset with the corresponding indices. (https://discuss.pytorch.org/t/custom-dataset-best-practices-for-transformations-on-training-set/155761/2)
+- 「Transformは，最初に固定せよ！」
