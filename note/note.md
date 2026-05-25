@@ -167,15 +167,6 @@ loss = criterion(outputs, labels_train) # 損失
     > My preference would be to create three difference datasets using the desired transformations for the training, validation, and test sets. This approach makes it clear that the train_dataset also uses the train_transform only. Once this is done, create the training, validation, and test indices via any kind of splitting (sklearn.model_selection.train_test_split is quite popular) and wrap the datasets into a Subset with the corresponding indices. (https://discuss.pytorch.org/t/custom-dataset-best-practices-for-transformations-on-training-set/155761/2)
 - 「Transformは，最初に固定せよ！」
 
-## バッチサイズは訓練・検証・テストデータ数の公約数？
-- 結論：バッチサイズは公約数でなくてOK．最後の端数バッチも問題なく処理される．
-- 理由：損失はバッチサイズの違いを吸収するために，平均で設計するから．
-- 実務：
-    - `drop_last=True` で端数を捨てる．（端数が1の場合，バッチ正規化がエラーになるため．）
-    - バッチサイズを決める基準：
-        - GPUに収まる最大
-        - 2の累乗（128, 256, 512, …）が基本
-
 ## nn.ReLU(inplace=True)のinplaceは何のため？
 ### 結論
 `inplace=True`は，中間テンソルを上書きしてメモリを節約するためのオプション．
@@ -669,3 +660,5 @@ y = max(0, x)
 - 副産物としての正則化効果
 
     学習時に「たまたま選ばれたミニバッチ」の平均と分散を使うため，計算結果に毎回小さなノイズ（揺らぎ）が乗る．このノイズがドロップアウトと同様に，モデルが訓練データを丸暗記するのを防ぐ「正則化（過学習防止）」の効果も生んでいる．
+
+## バッチサイズの決め方
