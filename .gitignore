@@ -1,6 +1,7 @@
 # 参考書のソースコード
 pytorch_book_info-main
 pytorch_handbook-master
+pytorch_advanced-master
 
 # LaTeX intermediate files
 *.aux
