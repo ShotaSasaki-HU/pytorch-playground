@@ -16,3 +16,5 @@ pytorch_advanced-master
 # latexmk output dir
 note/out/*
 !note/out/*.pdf
+
+ロードマップ.md
