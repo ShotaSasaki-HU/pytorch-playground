@@ -28,5 +28,7 @@ jupyter kernelspec list
 conda activate pytorch-playground
 cd <WORKSPACE_DIR>/<REPO>
 git pull
-jupyter notebook
+
+# 現在のディレクトリをVS Codeで開く
+code .
 ```
