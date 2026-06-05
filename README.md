@@ -31,4 +31,9 @@ git pull
 
 # 現在のディレクトリをVS Codeで開く
 code .
+
+# ローカルに溜まる変更を消しとばす方法
+git fetch origin main
+git reset --hard origin/main
+git clean -fd
 ```
