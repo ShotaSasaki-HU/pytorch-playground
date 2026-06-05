@@ -26,7 +26,7 @@ jupyter kernelspec list
 ## 研究室PCの運用フロー
 ```
 conda activate pytorch-playground
-cd <WORKSPACE_DIR>
+cd <WORKSPACE_DIR>/<REPO>
 git pull
 jupyter notebook
 ```
