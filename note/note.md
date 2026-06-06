@@ -944,6 +944,10 @@ Encoderの重みは，以下の2つの全く逆の命令の妥協点として更
     <img src="./images/mnist_morphing_with_vae.gif" width="150">
 </p>
 
+## 「階層型VAE」から「拡散モデル」への進化方法
+- 観測変数と潜在変数の次元数を同じにする．最初から最後まで一切変えない．
+- Encoderのニューラルネットをクビにする．代わりにEncoderは，固定の正規分布によるノイズを追加する．
+
 ## Denoising Diffusion Probabilistic Models (DDPM)
 DDPMは，拡散モデルの1つである．
 - Denoising：ノイズの除去
