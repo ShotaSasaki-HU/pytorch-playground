@@ -1227,6 +1227,9 @@ U-NetのConvBlockに組み込まれたMLPの目的は，Transformerのように�
     学習によって保証されるのは「損失が小さくなるようにQ・K・Vが変化する」事だけ．その表現が人間に理解できる形で分かれることもあれば，そうでないこともある．
 
 - MHSA (Multi-Head Self-Attention)
+
+    Multi-Head Self-Attentionは，埋め込み空間を複数の低次元表現空間へ射影し，各表現空間で独立にAttention Weightを計算することで，単一のAttention Weightでは表現しにくい複数の関係性を並列に学習しやすくする仕組みである．
+
     - わざわざマルチヘッドにする理由：
         
         Single Headでは1つのAttention Weightしか生成されない．一方，Multi-Headでは独立したパラメータ（埋め込みの重み）を持つ複数のAttention Weightを並列に生成できるため，入力中の異なる関係性を同時に表現しやすくなる．
